@@ -306,7 +306,7 @@ namespace RTMPDownloader
 		public static string cierraConJS(){
 			return "<html><body>"+
 				"La descarga ha sido agregada.<br>"+
-				"Ahora puedes cerrar esta pestaña."+
+				"Ahora puedes cerrar esta ventana."+
 				"</body></html>";
 		}
 	
@@ -364,7 +364,7 @@ namespace RTMPDownloader
 		}
 	
 		public static string getCerrado(){
-			return "Has cerrado el programa<br>Ahora puedes cerrar la consola.";
+			return "Has cerrado el programa<br>Ahora puedes cerrar esta ventana.";
 		}
 	}
 }
