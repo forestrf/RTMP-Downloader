@@ -304,12 +304,10 @@ namespace RTMPDownloader
 		}
 	
 		public static string cierraConJS(){
-			return "<html><body>Puedes cerrar esta ventana/pestaña."+
-				"<script>"+
-					"ventana=window.self;"+
-					"ventana.opener=window.self;"+
-					"ventana.close();"+
-				"</script></body></html>";
+			return "<html><body>"+
+				"La descarga ha sido agregada.<br>"+
+				"Ahora puedes cerrar esta pestaña."+
+				"</body></html>";
 		}
 	
 		public static string getRTMPdownloaderjs(){
