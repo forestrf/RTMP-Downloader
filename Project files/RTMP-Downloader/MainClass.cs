@@ -131,10 +131,15 @@ namespace RTMPDownloader
 						}
 						//Descargar urlhttp para usar el contenido como url
 						Debug.WriteLine(Utilidades.WL("urlhttp=>"+urlhttp));
-						url = new WebClient().DownloadString(urlhttp);
-						Debug.WriteLine(Utilidades.WL("url=>"+url));
-						var t = new Thread(() => lanzaDescarga(url, nombre));
-						t.Start();
+						try{
+							url = new WebClient().DownloadString(urlhttp);
+							Debug.WriteLine(Utilidades.WL("url=>"+url));
+							var t = new Thread(() => lanzaDescarga(url, nombre));
+							t.Start();
+						}
+						catch(Exception e){
+							Console.WriteLine (e);
+						}
 						continue;
 					}
 				}
@@ -198,7 +203,7 @@ namespace RTMPDownloader
 				}
 	
 	
-				myServer.Envia ("Na que hacer");
+				myServer.Envia ("No se encuentra la orden.");
 			}
 		}
 	
