@@ -5,24 +5,42 @@ namespace RTMPDownloader
 {
 	public static class HTML
 	{
+
+		public static string getCabeceraHTML(){
+			return "<html>" +
+			"<head>" +
+			"<title>RTMP-Downloader V" + MainClass.version + "</title>" +
+			"<link rel=\"stylesheet\" href=\"all.css\">" +
+			"<script src=\"http://code.jquery.com/jquery-2.0.3.min.js\"></script>" +
+				"<script type=\"text/javascript\">" +
+
+				"var _gaq = _gaq || [];" +
+				"_gaq.push(['_setAccount', 'UA-29252510-2']);" +
+				"_gaq.push(['_trackPageview']);" +
+
+				"(function() {" +
+				"var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;" +
+				"ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';" +
+				"var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);" +
+				"})();" +
+
+				"</script>" +
+			"</head>" +
+			"<body>" +
+			"<div id=\"cerrarAplicacion\">" +
+			"<a href=\"/?accion=cerrarPrograma\" onclick=\"return confirm('Se cancelarán todas las descargas en progreso\\n¿Seguro que quieres cerrar el programa?');\">Cerrar RTMP-Downloader</a>" +
+			"</div>" +
+			"<div id=\"menu\">" +
+			"<a href=\"/\" class=\"titulo_menu\">RTMP-Downloader V" + MainClass.version + "</a>" +
+			"<a href=\"http://www.descargavideos.tv\">Descargavideos.TV</a>" +
+			"<a href=\"http://www.descargavideos.tv/lab#lab_rtmp-downloader\" target=\"_blank\">Buscar actualizaciones</a>" +
+			"<a href=\"/ayuda\">Ayuda</a>" +
+			"</div>";
+			
+		}
 		
 		public static string getIndex(){
-			return "<html>" +
-				"<head>" +
-				"<title>RTMP-Downloader V" + MainClass.version + "</title>" +
-					"<link rel=\"stylesheet\" href=\"all.css\">" +
-					"<script src=\"http://code.jquery.com/jquery-2.0.3.min.js\"></script>" +
-				"</head>" +
-				"<body>" +
-					"<div id=\"cerrarAplicacion\">" +
-					"<a href=\"/?accion=cerrarPrograma\" onclick=\"return confirm('Se cancelarán todas las descargas en progreso\\n¿Seguro que quieres cerrar el programa?');\">Cerrar RTMP-Downloader</a>" +
-					"</div>" +
-					"<div id=\"menu\">" +
-				"<a href=\"/\" class=\"titulo_menu\">RTMP-Downloader V" + MainClass.version + "</a>" +
-						"<a href=\"http://www.descargavideos.tv\">Descargavideos.TV</a>" +
-				"<a href=\"http://www.descargavideos.tv/lab#lab_rtmp-downloader\" target=\"_blank\">Buscar actualizaciones</a>" +
-						"<a href=\"/ayuda\">Ayuda</a>" +
-					"</div>" +
+			return getCabeceraHTML() +
 					"<div id=\"contenido\">" +
 						"Nueva descarga:" +
 						"<form id=\"form_agregar\" class=\"tabla\" method=\"GET\">" +
@@ -315,22 +333,7 @@ namespace RTMPDownloader
 		}
 	
 		public static string getAyuda(){
-			return "<html>" +
-				"<head>" +
-					"<title>RTMP-Downloader V" + MainClass.version + "</title>" +
-					"<link rel=\"stylesheet\" href=\"all.css\">" +
-					"<script src=\"http://code.jquery.com/jquery-2.0.3.min.js\"></script>" +
-				"</head>" +
-				"<body>" +
-					"<div id=\"cerrarAplicacion\">" +
-					"<a href=\"/?accion=cerrarPrograma\" onclick=\"return confirm('Se cancelarán todas las descargas en progreso\\n¿Seguro que quieres cerrar el programa?');\">Cerrar RTMP-Downloader</a>" +
-					"</div>" +
-					"<div id=\"menu\">" +
-					"<a href=\"/\" class=\"titulo_menu\">RTMP-Downloader V" + MainClass.version + "</a>" +
-						"<a href=\"http://www.descargavideos.tv\">Descargavideos.TV</a>" +
-						"<a href=\"http://www.descargavideos.tv/lab#lab_rtmp-downloader\" target=\"_blank\">Buscar actualizaciones</a>" +
-						"<a href=\"/ayuda\">Ayuda</a>" +
-					"</div>" +
+			return getCabeceraHTML() +
 					"<div id=\"contenido\">" +
 						"<img src=\"/ayuda/ayuda_prev.png\" class=\"img_ayuda\">" +
 						"<ol>" +
