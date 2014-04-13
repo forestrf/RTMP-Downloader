@@ -21,12 +21,13 @@ namespace RTMPDownloader
 		Boolean cancelado = false;
 		public String fallado = "";
 		
-		ProcessStartInfo procesoFFMPEG2;
-		Process exeProcessProcesoFFMPEG2;
+		ProcessStartInfo procesoRTMPDUMP;
+		Process exeProcessProcesoRTMPDUMP;
 	
 		
 		public bool Comienza (string url, string nombre)
 		{
+			Debug.WriteLine(Utilidades.WL("Comenzando descarga = "+url));
 			this.url = url;
 			this.nombre = nombre;
 	
@@ -35,10 +36,15 @@ namespace RTMPDownloader
 	
 		public void Cancelar ()
 		{
-			if(exeProcessProcesoFFMPEG2!=null)
-				if(!exeProcessProcesoFFMPEG2.HasExited)
-					exeProcessProcesoFFMPEG2.Kill();
+			Debug.WriteLine(Utilidades.WL("Cancelando descarga = "+url));
+			if(exeProcessProcesoRTMPDUMP!=null)
+				if(!exeProcessProcesoRTMPDUMP.HasExited)
+					exeProcessProcesoRTMPDUMP.Kill();
 			cancelado = true;
+			Console.WriteLine ("");
+			Console.WriteLine ("Descarga candelada.");
+			Console.WriteLine ("");
+			Debug.WriteLine(Utilidades.WL("descarga cancelada = "+url));
 		}
 	
 		public bool download ()
@@ -52,28 +58,35 @@ namespace RTMPDownloader
 				if(nombre != "")
 					url = Utilidades.ReemplazaParametro (url, "o", nombre);
 	
-				procesoFFMPEG2 = new ProcessStartInfo ();
-				procesoFFMPEG2.FileName = MainClass.ffmpeg2file;
-				procesoFFMPEG2.Arguments = url;
+				Debug.WriteLine(Utilidades.WL("Iniciando proceso RTMPDump para = "+url));
+				procesoRTMPDUMP = new ProcessStartInfo ();
+				procesoRTMPDUMP.FileName = MainClass.rtmpdumpFile;
+				procesoRTMPDUMP.Arguments = url;
 	
-				procesoFFMPEG2.UseShellExecute = false;
-				procesoFFMPEG2.RedirectStandardOutput = true;
-				procesoFFMPEG2.RedirectStandardError = true;
-				procesoFFMPEG2.CreateNoWindow = true;
+				procesoRTMPDUMP.UseShellExecute = false;
+				procesoRTMPDUMP.RedirectStandardOutput = true;
+				procesoRTMPDUMP.RedirectStandardError = true;
+				procesoRTMPDUMP.CreateNoWindow = true;
 	
 	
-				exeProcessProcesoFFMPEG2 = Process.Start (procesoFFMPEG2);
+				exeProcessProcesoRTMPDUMP = Process.Start (procesoRTMPDUMP);
+				Console.WriteLine ("");
+				Console.WriteLine ("RTMPDump lanzado con los parámetros:");
+				Console.WriteLine ("rtmpdump "+url);
+				Debug.WriteLine(Utilidades.WL("RTMPDump arrancado para = "+url));
 	
-				exeProcessProcesoFFMPEG2.OutputDataReceived += p_OutputDataReceived;
-				exeProcessProcesoFFMPEG2.ErrorDataReceived += p_ErrorDataReceived;
+				exeProcessProcesoRTMPDUMP.OutputDataReceived += p_OutputDataReceived;
+				exeProcessProcesoRTMPDUMP.ErrorDataReceived += p_ErrorDataReceived;
 	
-				exeProcessProcesoFFMPEG2.BeginOutputReadLine();
-				exeProcessProcesoFFMPEG2.BeginErrorReadLine();
+				exeProcessProcesoRTMPDUMP.BeginOutputReadLine();
+				exeProcessProcesoRTMPDUMP.BeginErrorReadLine();
 	
-				exeProcessProcesoFFMPEG2.WaitForExit ();
+				exeProcessProcesoRTMPDUMP.WaitForExit ();
 			} catch (Exception e) {
 				//En caso de que FFmpeg falle no siempre dara excepcion (por ejemplo, cuando es necesario cambiar de proxy el server los enlaces no funcionan bien, pero no se activa este fallo)
 				Console.WriteLine ("RTMPDump ha fallado.");
+				Debug.WriteLine(Utilidades.WL("RTMPDump ha fallado"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 				fallado = "RTMPDump ha fallado";
 				return false;
 			}
@@ -137,7 +150,7 @@ namespace RTMPDownloader
 	
 	
 	
-						Console.WriteLine (nombre + " - " + porcentajeInt + "%" + " - Quedan: " + horaRestanteString);
+						Console.Write (nombre + " - " + porcentajeInt + "%" + " - Quedan: " + horaRestanteString+"\r");
 	
 					}
 				}

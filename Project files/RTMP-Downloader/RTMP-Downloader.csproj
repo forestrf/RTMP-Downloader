@@ -10,7 +10,7 @@
     <RootNamespace>RTMPDownloader</RootNamespace>
     <AssemblyName>RTMP-Downloader</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <ReleaseVersion>0.2</ReleaseVersion>
+    <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
@@ -42,7 +42,6 @@
     <Compile Include="FileHelper.cs" />
     <Compile Include="GetILocalFileBytes.cs" />
     <Compile Include="HTML.cs" />
-    <Compile Include="NetworkHelper.cs" />
     <Compile Include="NetworkServer.cs" />
     <Compile Include="Utilidades.cs" />
   </ItemGroup>

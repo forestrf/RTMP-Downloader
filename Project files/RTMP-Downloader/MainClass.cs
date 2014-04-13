@@ -13,11 +13,10 @@ namespace RTMPDownloader
 {
 	public static class MainClass
 	{
-		public static string ffmpeg2file = "";
-		public static string rtmpdownloaderPath = "";
+		public static string rtmpdumpFile = "";
 		public static string relativePath = "";
 	
-		public static string version = "0.2b";
+		public static string version = "0.3";
 		
 		public static int puerto = 25432;
 	
@@ -32,19 +31,22 @@ namespace RTMPDownloader
 			Console.WriteLine ("");
 			Debug.WriteLine(Utilidades.WL("Modo Debug"));
 			Debug.WriteLine(Utilidades.WL(""));
+
+			MainClass.relativePath = AppDomain.CurrentDomain.BaseDirectory;
 	
-			MainClass.rtmpdownloaderPath = AppDomain.CurrentDomain.BaseDirectory;
-			MainClass.relativePath = Directory.GetCurrentDirectory();
-	
-			if (File.Exists (MainClass.rtmpdownloaderPath + "\\rtmpdump\\rtmpdump.exe")) {
-				MainClass.ffmpeg2file = MainClass.rtmpdownloaderPath + "\\rtmpdump\\rtmpdump.exe";
-			} else if (File.Exists (MainClass.rtmpdownloaderPath + "\\rtmpdump.exe")) {
-				MainClass.ffmpeg2file = MainClass.rtmpdownloaderPath + "\\rtmpdump.exe";
+			if (File.Exists (MainClass.relativePath + "rtmpdump\\rtmpdump.exe")) {
+				MainClass.rtmpdumpFile = MainClass.relativePath + "rtmpdump\\rtmpdump.exe";
+				Debug.WriteLine(Utilidades.WL("RTMPDUMP encontrado en: "+MainClass.relativePath + "\\rtmpdump\\rtmpdump.exe"));
+			} else if (File.Exists (MainClass.relativePath + "rtmpdump.exe")) {
+				MainClass.rtmpdumpFile = MainClass.relativePath + "rtmpdump.exe";
+				Debug.WriteLine(Utilidades.WL("RTMPDUMP encontrado en: "+MainClass.relativePath + "rtmpdump.exe"));
 			}
-			if (MainClass.ffmpeg2file == "") {
-				//No tsmuxer files
+			if (MainClass.rtmpdumpFile == "") {
+				//No se encuentra el archivo necesario
+				Debug.WriteLine(Utilidades.WL("RTMPDUMP NO encontrado"));
+
 				Console.WriteLine ("Por favor descarga rtmpdump y coloca el archivo rtmpdump.exe dentro de la siguiente carpeta:");
-				Console.WriteLine (MainClass.rtmpdownloaderPath);
+				Console.WriteLine (MainClass.relativePath);
 				Console.WriteLine ("");
 				Console.WriteLine ("Descargalo aqui:");
 				Console.WriteLine ("http://rtmpdump.mplayerhq.hu/download/");
@@ -71,6 +73,8 @@ namespace RTMPDownloader
 			Console.WriteLine ("Para usar el programa abre en un navegador la siguiente URL:");
 			Console.WriteLine ("http://127.0.0.1:"+puerto+"/");
 			Console.WriteLine ("");
+
+			Debug.WriteLine(Utilidades.WL("Arrancando servidor"));
 	
 	
 			myServer = new NetworkServer ();
@@ -79,9 +83,13 @@ namespace RTMPDownloader
 				Console.WriteLine ("No se ha podido abrir servidor.");
 				Console.WriteLine ("Es posible que ya tengas el programa abierto.");
 				Console.WriteLine ("");
-	
+				
+				Debug.WriteLine(Utilidades.WL("No se ha podido arrancar el servidor"));
+
 				return;
 			}
+
+			Debug.WriteLine(Utilidades.WL("Servidor arrancado"));
 			
 			//Abre navegador
 			Process.Start("http://127.0.0.1:"+puerto+"/");
@@ -102,9 +110,21 @@ namespace RTMPDownloader
 				string url = GETurl.getParametro ("url");
 				
 				string urlhttp = GETurl.getParametro ("urlhttp");
-	
+
+				if (accion != "progreso") {
+					Debug.WriteLine(Utilidades.WL(""));
+					Debug.WriteLine (Utilidades.WL ("------------------------------------------------------------"));
+					Debug.WriteLine (Utilidades.WL ("Nueva petición realizada al servidor:"));
+					Debug.WriteLine (Utilidades.WL ("path = " + path));
+					Debug.WriteLine (Utilidades.WL ("accion = " + accion));
+					Debug.WriteLine (Utilidades.WL ("nombre = " + nombre));
+					Debug.WriteLine (Utilidades.WL ("url = " + url));
+					Debug.WriteLine (Utilidades.WL ("urlhttp = " + urlhttp));
+					Debug.WriteLine (Utilidades.WL ("------------------------------------------------------------"));
+					Debug.WriteLine(Utilidades.WL(""));
+				}
+
 				if (accion == "" || accion == "descargar") {
-					Debug.WriteLine(Utilidades.WL("descargar"));
 					if (url != "") {
 						Debug.WriteLine(Utilidades.WL("url"));
 						string cerrarVentana = GETurl.getParametro ("cerrarVentana");
@@ -115,8 +135,10 @@ namespace RTMPDownloader
 						else{
 							myServer.EnviaLocation ("/");
 						}
+						Debug.WriteLine(Utilidades.WL("Poniendo descarga en cola..."));
 						var t = new Thread(() => lanzaDescarga(url, nombre));
 						t.Start();
+						Debug.WriteLine(Utilidades.WL("Descarga puesta en cola"));
 						continue;
 					}
 					else if (urlhttp != "") {
@@ -130,15 +152,17 @@ namespace RTMPDownloader
 							myServer.EnviaLocation ("/");
 						}
 						//Descargar urlhttp para usar el contenido como url
-						Debug.WriteLine(Utilidades.WL("urlhttp=>"+urlhttp));
 						try{
 							url = new WebClient().DownloadString(urlhttp);
-							Debug.WriteLine(Utilidades.WL("url=>"+url));
+							Debug.WriteLine(Utilidades.WL("url descargada desde urlhttp = "+url));
+							Debug.WriteLine(Utilidades.WL("Poniendo la descarga en cola"));
 							var t = new Thread(() => lanzaDescarga(url, nombre));
 							t.Start();
+							Debug.WriteLine(Utilidades.WL("Descarga puesta en cola"));
 						}
 						catch(Exception e){
 							Console.WriteLine (e);
+							Debug.WriteLine(Utilidades.WL(e.ToString()));
 						}
 						continue;
 					}

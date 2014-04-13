@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 
 namespace RTMPDownloader
@@ -29,6 +30,8 @@ namespace RTMPDownloader
 			catch(Exception e){
 				Console.WriteLine ("h0");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h0"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 				return false;
 			}
 		}
@@ -86,6 +89,8 @@ namespace RTMPDownloader
 			catch(Exception e){
 				Console.WriteLine ("h1");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h1"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 				CierraCliente ();
 				return new RespuestaHTTP (false);
 			}
@@ -112,6 +117,8 @@ namespace RTMPDownloader
 			} catch (Exception e) {
 				Console.WriteLine ("h2");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h2"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 				return false;
 			}
 		}
@@ -132,6 +139,8 @@ namespace RTMPDownloader
 			} catch (Exception e) {
 				Console.WriteLine ("h10");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h10"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 				return false;
 			}
 		}
@@ -151,6 +160,8 @@ namespace RTMPDownloader
 			} catch (Exception e) {
 				Console.WriteLine("h3");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h3"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 				return false;
 			}
 		}
@@ -165,6 +176,8 @@ namespace RTMPDownloader
 			catch(Exception e){
 				Console.WriteLine("h4");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h4"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 			}
 		}
 	
@@ -178,6 +191,8 @@ namespace RTMPDownloader
 			catch(Exception e){
 				Console.WriteLine("h5");
 				Console.WriteLine (e);
+				Debug.WriteLine(Utilidades.WL("h5"));
+				Debug.WriteLine(Utilidades.WL(e.ToString()));
 			}
 		}
 	}

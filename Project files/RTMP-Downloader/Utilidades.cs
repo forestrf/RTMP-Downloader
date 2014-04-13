@@ -29,13 +29,28 @@ namespace RTMPDownloader
 			}
 			return "";
 		}
-		
+
+		public static string nombreArchivoDebug;
 		public static string WL(string txt){
-			using (StreamWriter sw  = File.AppendText(@"DEBUG.txt") ){
+			if (nombreArchivoDebug == null) {
+				nombreArchivoDebug = "logs/"+nombreValidoParaArchivo("DEBUG " + DateTime.Now +".txt");
+				if(!Directory.Exists(MainClass.relativePath+"/logs")){
+					Directory.CreateDirectory ("logs");
+				}
+			}
+			using (StreamWriter sw  = File.AppendText(@nombreArchivoDebug) ){
 				sw.WriteLine(txt);
 			}
 			Console.WriteLine(txt);
 			return txt;
+		}
+
+		public static string nombreValidoParaArchivo(string nombre){
+			foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+			{
+				nombre = nombre.Replace(c, '_');
+			}
+			return nombre;
 		}
 	}
 }
