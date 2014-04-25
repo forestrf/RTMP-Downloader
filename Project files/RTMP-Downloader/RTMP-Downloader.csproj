@@ -41,16 +41,19 @@
     <Compile Include="Descargador.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="GetILocalFileBytes.cs" />
-    <Compile Include="HTML.cs" />
     <Compile Include="NetworkServer.cs" />
     <Compile Include="Utilidades.cs" />
+    <Compile Include="HTML.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <EmbeddedResource Include="ayuda_img.png" />
-    <EmbeddedResource Include="web\all.css" />
+    <EmbeddedResource Include="web\css\all.css" />
+    <EmbeddedResource Include="web\icons\folder.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="web\" />
+    <Folder Include="web\css\" />
+    <Folder Include="web\icons\" />
   </ItemGroup>
 </Project>

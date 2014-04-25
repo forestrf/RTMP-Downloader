@@ -23,6 +23,11 @@ namespace RTMPDownloader
 		public static List<Descargador> descargasEnProceso = new List<Descargador>();
 		public static int TempDescargasEnProcesoCantidad = 0;
 	
+
+
+		public static Configs configs = new Configs();
+
+
 	
 		public static void Main (string[] cmdLine)
 		{
@@ -32,21 +37,21 @@ namespace RTMPDownloader
 			Debug.WriteLine(Utilidades.WL("Modo Debug"));
 			Debug.WriteLine(Utilidades.WL(""));
 
-			MainClass.relativePath = AppDomain.CurrentDomain.BaseDirectory;
+			relativePath = AppDomain.CurrentDomain.BaseDirectory;
 	
-			if (File.Exists (MainClass.relativePath + "rtmpdump\\rtmpdump.exe")) {
-				MainClass.rtmpdumpFile = MainClass.relativePath + "rtmpdump\\rtmpdump.exe";
-				Debug.WriteLine(Utilidades.WL("RTMPDUMP encontrado en: "+MainClass.relativePath + "\\rtmpdump\\rtmpdump.exe"));
-			} else if (File.Exists (MainClass.relativePath + "rtmpdump.exe")) {
-				MainClass.rtmpdumpFile = MainClass.relativePath + "rtmpdump.exe";
-				Debug.WriteLine(Utilidades.WL("RTMPDUMP encontrado en: "+MainClass.relativePath + "rtmpdump.exe"));
+			if (File.Exists (relativePath + "rtmpdump\\rtmpdump.exe")) {
+				rtmpdumpFile = relativePath + "rtmpdump\\rtmpdump.exe";
+				Debug.WriteLine(Utilidades.WL("RTMPDUMP encontrado en: "+relativePath + "\\rtmpdump\\rtmpdump.exe"));
+			} else if (File.Exists (relativePath + "rtmpdump.exe")) {
+				rtmpdumpFile = relativePath + "rtmpdump.exe";
+				Debug.WriteLine(Utilidades.WL("RTMPDUMP encontrado en: "+relativePath + "rtmpdump.exe"));
 			}
-			if (MainClass.rtmpdumpFile == "") {
+			if (rtmpdumpFile == "") {
 				//No se encuentra el archivo necesario
 				Debug.WriteLine(Utilidades.WL("RTMPDUMP NO encontrado"));
 
 				Console.WriteLine ("Por favor descarga rtmpdump y coloca el archivo rtmpdump.exe dentro de la siguiente carpeta:");
-				Console.WriteLine (MainClass.relativePath);
+				Console.WriteLine (relativePath);
 				Console.WriteLine ("");
 				Console.WriteLine ("Descargalo aqui:");
 				Console.WriteLine ("http://rtmpdump.mplayerhq.hu/download/");
@@ -56,8 +61,14 @@ namespace RTMPDownloader
 				Console.ReadKey();
 				return;
 			}
-	
-	
+
+
+			configs = Utilidades.leerConfigs ();
+			if (configs.rutaDescargas == null) {
+				configs.rutaDescargas = relativePath;
+				Utilidades.escribirConfigs (configs);
+			}
+			Debug.WriteLine(Utilidades.WL("Ruta descargas: "+configs.rutaDescargas));
 	
 			//Todo http aqui
 			operaDesdeServidor ();
@@ -185,13 +196,33 @@ namespace RTMPDownloader
 				}
 				
 				if(path == "/all.css"){
-					byte[] cssBytes = GetILocalFileBytes.Get("RTMPDownloader.web.all.css");
+					byte[] cssBytes = GetILocalFileBytes.Get("RTMPDownloader.web.css.all.css");
 					myServer.EnviaRaw ("text/css; charset=utf-8", cssBytes);
 					continue;
 				}
 	
 				if(path == "/rtmpdownloader.js"){
 					myServer.Envia (HTML.getRTMPdownloaderjs());
+					continue;
+				}
+
+				if (path == "/listadirs/folder.png") {
+					byte[] imgBytes = GetILocalFileBytes.Get("RTMPDownloader.web.icons.folder.png");
+					myServer.EnviaRaw ("image/png", imgBytes);
+					continue;
+				}
+
+				if (path == "/listadirs") {
+					string rutaInicial = GETurl.getParametro("ruta");
+					myServer.Envia (HTML.getFileBrowser (rutaInicial));
+					continue;
+				}
+
+				if (path == "/elijedir") {
+					string rutaInicial = GETurl.getParametro("ruta");
+					configs.rutaDescargas = rutaInicial;
+					Utilidades.escribirConfigs (configs);
+					myServer.EnviaLocation ("/opciones");
 					continue;
 				}
 			
@@ -265,7 +296,7 @@ namespace RTMPDownloader
 				string windir = Environment.GetEnvironmentVariable ("WINDIR");
 				System.Diagnostics.Process prc = new System.Diagnostics.Process ();
 				prc.StartInfo.FileName = windir + @"\explorer.exe";
-				prc.StartInfo.Arguments = MainClass.relativePath;
+				prc.StartInfo.Arguments = configs.rutaDescargas;
 				prc.Start ();
 			}
 			

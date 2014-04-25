@@ -162,6 +162,9 @@ a:hover {
 	display: table-row;
 	line-height: 22px;
 }
+.tabla > .elemento a {
+    color: #155469;
+}
 .tabla > .titulos:first-child {
 	background-color: #24302A;
 	color: #ECFFC9;
@@ -200,4 +203,26 @@ li {
 	border: 1px solid #FFFFFF;
 	padding: 10px;
 	width: 80%
+}
+
+.directorio{
+	border: 1px solid #DDDDDD;
+	display: inline-block;
+	margin: 5px;
+	padding: 3px;
+	text-align: center;
+	width: 120px;
+	word-wrap: break-word;
+	text-decoration: none;
+	color: #000;
+}
+.directorio:hover{
+	background-color: #E4F8FF;
+}
+.contenidoTIT {
+    font-size: 20px;
+    padding: 10px 0 15px 10px;
+}
+.contenidoCONT{
+	font-size: 15px;
 }

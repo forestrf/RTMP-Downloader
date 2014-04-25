@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace RTMPDownloader
 {
@@ -34,14 +35,19 @@ namespace RTMPDownloader
 				"<a href=\"/\" class=\"titulo_menu\">RTMP-Downloader V" + MainClass.version + "</a>" +
 				"<a href=\"http://www.descargavideos.tv\">Descargavideos.TV</a>" +
 				"<a href=\"http://www.descargavideos.tv/lab#lab_rtmp-downloader\" target=\"_blank\">Buscar actualizaciones</a>" +
-				"<a href=\"/opciones\" target=\"_blank\">Opciones</a>" +
+				"<a href=\"/opciones\">Opciones</a>" +
 				"<a href=\"/ayuda\">Ayuda</a>" +
 				"</div>";
 			
 		}
 
 		public static string getOpciones(){
-			return getCabeceraHTML() + "";
+			return getCabeceraHTML () +
+				"<div id=\"contenido\">" +
+				"<div class='contenidoTIT'>Dónde se guardarán la descargas:</div>" +
+				"<div class='contenidoCONT'>Ruta actual: "+MainClass.configs.rutaDescargas+"<br>" +
+				"<a href='/listadirs?ruta="+MainClass.configs.rutaDescargas+"'>Elejir dónde guardar los vídeos</a></div>" +
+				"</div>";
 		}
 
 		public static string getIndex(){
@@ -167,6 +173,52 @@ namespace RTMPDownloader
 	
 		public static string getCerrado(){
 			return "Has cerrado el programa<br>Ahora puedes cerrar esta ventana.";
+		}
+
+		public static string getFileBrowser(string dirPath){
+			string respuesta = getCabeceraHTML () + "<div id=\"contenido\">";
+			try{
+				respuesta += "<div class='tabla'>";
+				respuesta += "<div class='elemento'><div>Ruta actual</div><div>"+dirPath+"</div></div>";
+
+				respuesta += "<div class='elemento'><div>Discos duros</div><div>";
+
+				DriveInfo[] allDrives = DriveInfo.GetDrives();
+				foreach (DriveInfo d in allDrives)
+				{
+					if (d.IsReady == true)
+					{
+						respuesta += "<a href='/listadirs?ruta="+d.Name+"\\'>"+d.VolumeLabel+"</a> ";
+					}
+				}
+
+				respuesta += "</div></div>";
+
+				respuesta += "<div class='elemento'><div></div><div><a href='/elijedir?ruta="+dirPath+"'>Guardar los vídeos en esta carpeta</a></div></div>";
+
+				respuesta += "</div><br>";
+
+
+
+				if(dirPath.Length > 4){
+					respuesta += "<a href='/listadirs?ruta="+dirPath.Substring(0, dirPath.LastIndexOf("\\",dirPath.Length -2) +1)+"'><div class='directorio'><img src='/listadirs/folder.png'><br>Carpeta superior</div></a>";
+				}
+
+				dirPath = dirPath.Substring(0, dirPath.Length -1);
+				List<string> dirs = new List<string>(System.IO.Directory.GetDirectories(dirPath));
+
+	            foreach (var dir in dirs)
+	            {
+					string d = dir.Substring(dir.LastIndexOf("\\") + 1);
+					respuesta += "<a href='/listadirs?ruta="+dirPath+"\\"+d+"\\'><div class='directorio'><img src='/listadirs/folder.png'><br>"+d+"</div></a>";
+	            }
+			}
+			catch(Exception e){
+				//return e.ToString();
+			}
+			return respuesta + "</div>" +
+				"</body>" +
+				"</html>";
 		}
 	}
 }

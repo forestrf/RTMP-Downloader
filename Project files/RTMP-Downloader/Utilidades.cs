@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
 
 namespace RTMPDownloader
 {
@@ -31,17 +33,22 @@ namespace RTMPDownloader
 		}
 
 		public static string nombreArchivoDebug;
+		public static Bloqueo lockWL = new Bloqueo(false);
 		public static string WL(string txt){
-			if (nombreArchivoDebug == null) {
-				nombreArchivoDebug = "logs/"+nombreValidoParaArchivo("DEBUG " + DateTime.Now +".txt");
-				if(!Directory.Exists(MainClass.relativePath+"/logs")){
-					Directory.CreateDirectory ("logs");
+			lock (lockWL) {
+				lockWL.bloqueado = true;
+				if (nombreArchivoDebug == null) {
+					nombreArchivoDebug = "logs/" + nombreValidoParaArchivo ("DEBUG " + DateTime.Now + ".txt");
+					if (!Directory.Exists (MainClass.relativePath + "/logs")) {
+						Directory.CreateDirectory ("logs");
+					}
 				}
+				using (StreamWriter sw = File.AppendText (@nombreArchivoDebug)) {
+					sw.WriteLine (txt);
+				}
+				Console.WriteLine (txt);
+				lockWL.bloqueado = false;
 			}
-			using (StreamWriter sw  = File.AppendText(@nombreArchivoDebug) ){
-				sw.WriteLine(txt);
-			}
-			Console.WriteLine(txt);
 			return txt;
 		}
 
@@ -51,6 +58,38 @@ namespace RTMPDownloader
 				nombre = nombre.Replace(c, '_');
 			}
 			return nombre;
+		}
+
+		public static Configs leerConfigs(){
+			Debug.WriteLine(Utilidades.WL("Intentando leer configs"));
+			if (File.Exists ("configs.bin")) {
+				BinaryFormatter formatter = new BinaryFormatter ();
+				using (FileStream stream = File.OpenRead ("configs.bin")) {
+					return (Configs)formatter.Deserialize (stream);
+				}
+			}
+			return new Configs ();
+		}
+
+		public static void escribirConfigs(Configs configs){
+			Debug.WriteLine(Utilidades.WL("Intentando escribir configs"));
+			BinaryFormatter formatter = new BinaryFormatter();
+			using (FileStream stream = File.OpenWrite("configs.bin"))
+			{
+				formatter.Serialize(stream, configs);
+			}
+		}
+	}
+
+	[Serializable]
+	public class Configs{
+		public string rutaDescargas;
+	}
+
+	public class Bloqueo{
+		public bool bloqueado = false;
+		public Bloqueo(bool valor){
+			bloqueado = valor;
 		}
 	}
 }
