@@ -48,5 +48,9 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <EmbeddedResource Include="ayuda_img.png" />
+    <EmbeddedResource Include="web\all.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="web\" />
   </ItemGroup>
 </Project>

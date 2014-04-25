@@ -12,9 +12,7 @@ namespace RTMPDownloader
 	{
 		TcpListener listener;
 		TcpClient client;
-		NetworkStream stream;
-		StreamReader reader;
-		StreamWriter writer;
+		Stream stream;
 	
 		public NetworkServer (){}
 	
@@ -36,20 +34,48 @@ namespace RTMPDownloader
 			}
 		}
 	
+		private string streamReadLine(Stream inputStream) {
+			int next_char;
+			string data = "";
+			while (true) {
+				next_char = inputStream.ReadByte();
+				if (next_char == '\n') { break; }
+				if (next_char == '\r') { continue; }
+				if (next_char == -1) { System.Threading.Thread.Sleep(1); continue; };
+				data += Convert.ToChar(next_char);
+			}            
+			return data;
+		}
+
+		private static byte[] GetBytes(string str)
+		{
+			byte[] bytes = new byte[str.Length * sizeof(char)];
+			System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+			return bytes;
+		}
+
+		private void streamWrite(Stream inputStream, string text) {
+			inputStream.Flush ();
+
+			byte[] bytes = System.Text.Encoding.UTF8.GetBytes (text);
+			inputStream.Write (bytes, 0, bytes.Length);
+		}
+
 		public RespuestaHTTP Escucha ()
 		{
 	
 			try{
-	
+				if(client != null)
+					return new RespuestaHTTP(false);
+
 				client = listener.AcceptTcpClient ();
 				//Console.WriteLine ("Conexion establecida");
 	
-				stream = client.GetStream ();
-				reader = new StreamReader (stream);
-				writer = new StreamWriter (stream);
+				stream = new BufferedStream(client.GetStream ());
+				//stream = client.GetStream ();
 	
 	
-				string GETurl = reader.ReadLine ();
+				string GETurl = streamReadLine(stream);
 				
 				if(GETurl != null){
 					string pattern = " (.*?) HTTP";
@@ -99,18 +125,12 @@ namespace RTMPDownloader
 		public bool Envia (String que)
 		{
 			try {
-				writer.WriteLine ("HTTP/1.1 200 OK");
-				writer.WriteLine ("Connection: Close");
-				writer.WriteLine ("Content-Type: text/html; charset=utf-8");
-				//writer.WriteLine ("Content-Length: " + que.Length);
-	
-				writer.WriteLine ("");
-				/*int tam = 1000;
-				for(int i=0; i<que.Length; i+=tam){
-					writer.Write (que.Substring(i, que.Length-i>tam?tam:que.Length-i));
-				}*/
-				writer.Write (que);
-				writer.Flush();
+				streamWrite(stream, "HTTP/1.1 200 OK\r\n"+
+					"Connection: Close\r\n"+
+					"Content-Type: text/html; charset=utf-8\r\n"+
+					"Connection: Close\r\n"+
+					"\r\n"+que);
+
 	
 				CierraCliente ();
 				return true;
@@ -125,13 +145,11 @@ namespace RTMPDownloader
 		
 		public bool EnviaRaw(String contentType, byte[] contenido){
 			try {
-				writer.WriteLine ("HTTP/1.1 200 OK");
-				writer.WriteLine ("Connection: Close");
-				writer.WriteLine ("Content-Type: "+contentType);
-				//writer.WriteLine ("Content-Length: " + contenido.Length);
-	
-				writer.WriteLine ("");
-				writer.Flush();
+				streamWrite(stream, "HTTP/1.1 200 OK\r\n"+
+					"Connection: Close\r\n"+
+					"Content-Type: "+contentType+"\r\n"+
+					"Connection: Close\r\n"+
+					"\r\n");
 				stream.Write(contenido, 0, contenido.Length);
 	
 				CierraCliente ();
@@ -148,12 +166,11 @@ namespace RTMPDownloader
 		public bool EnviaLocation (String que)
 		{
 			try {
-				writer.WriteLine ("HTTP/1.1 301 OK");
-				writer.WriteLine ("Location: " + que);
-				writer.WriteLine ("Content-Length: 0");
-	
-				writer.WriteLine ("");
-				writer.Flush();
+				streamWrite(stream, "HTTP/1.1 301 OK\r\n");
+				streamWrite(stream, "Location: " + que+"\r\n");
+				streamWrite(stream, "Content-Length: 0\r\n");
+				streamWrite(stream, "Connection: Close\r\n");
+				streamWrite(stream, "\r\n");
 	
 				CierraCliente ();
 				return true;
@@ -169,9 +186,13 @@ namespace RTMPDownloader
 		public void CierraCliente ()
 		{
 			try{
-				this.writer.Close ();
-				this.stream.Close ();
+				stream.Dispose();
+				stream.Close ();
+				stream = null;
 				//Console.WriteLine("Cliente cerrado.");
+
+				client.Close();
+				client = null;
 			}
 			catch(Exception e){
 				Console.WriteLine("h4");

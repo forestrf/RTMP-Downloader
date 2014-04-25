@@ -172,6 +172,11 @@ namespace RTMPDownloader
 					myServer.Envia (HTML.getAyuda());
 					continue;
 				}
+
+				if(path == "/opciones"){
+					myServer.Envia (HTML.getOpciones());
+					continue;
+				}
 				
 				if(path == "/ayuda/ayuda_prev.png"){
 					byte[] imgBytes = GetILocalFileBytes.Get("RTMPDownloader.ayuda_img.png");
@@ -180,7 +185,8 @@ namespace RTMPDownloader
 				}
 				
 				if(path == "/all.css"){
-					myServer.Envia (HTML.getAllcss());
+					byte[] cssBytes = GetILocalFileBytes.Get("RTMPDownloader.web.all.css");
+					myServer.EnviaRaw ("text/css; charset=utf-8", cssBytes);
 					continue;
 				}
 	
