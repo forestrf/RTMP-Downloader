@@ -164,12 +164,11 @@ namespace RTMPDownloader
 						}
 						//Descargar urlhttp para usar el contenido como url
 						try{
-							WebClient client = new WebClient();
-							if(configs.proxy != null && configs.proxy != ""){
-								WebProxy wp = new WebProxy(configs.proxy);
-								client.Proxy = wp;
-							}
-							url = client.DownloadString(urlhttp);
+							/*if(configs.proxy != null && configs.proxy != ""){}
+							else*/
+							url = new WebClient().DownloadString(urlhttp);
+
+
 							Debug.WriteLine(Utilidades.WL("url descargada desde urlhttp = "+url));
 							Debug.WriteLine(Utilidades.WL("Poniendo la descarga en cola"));
 							var t = new Thread(() => lanzaDescarga(url, nombre));
