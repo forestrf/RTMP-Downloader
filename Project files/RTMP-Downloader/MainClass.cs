@@ -64,7 +64,7 @@ namespace RTMPDownloader
 
 
 			configs = Utilidades.leerConfigs ();
-			if (configs.rutaDescargas == null) {
+			if (configs.rutaDescargas == null || configs.rutaDescargas == "") {
 				configs.rutaDescargas = relativePath;
 				Utilidades.escribirConfigs (configs);
 			}
@@ -164,7 +164,12 @@ namespace RTMPDownloader
 						}
 						//Descargar urlhttp para usar el contenido como url
 						try{
-							url = new WebClient().DownloadString(urlhttp);
+							WebClient client = new WebClient();
+							if(configs.proxy != null && configs.proxy != ""){
+								WebProxy wp = new WebProxy(configs.proxy);
+								client.Proxy = wp;
+							}
+							url = client.DownloadString(urlhttp);
 							Debug.WriteLine(Utilidades.WL("url descargada desde urlhttp = "+url));
 							Debug.WriteLine(Utilidades.WL("Poniendo la descarga en cola"));
 							var t = new Thread(() => lanzaDescarga(url, nombre));
@@ -221,6 +226,14 @@ namespace RTMPDownloader
 				if (path == "/elijedir") {
 					string rutaInicial = GETurl.getParametro("ruta");
 					configs.rutaDescargas = rutaInicial;
+					Utilidades.escribirConfigs (configs);
+					myServer.EnviaLocation ("/opciones");
+					continue;
+				}
+
+				if (path == "/elijeproxy") {
+					string proxy = GETurl.getParametro("valor");
+					configs.proxy = proxy;
 					Utilidades.escribirConfigs (configs);
 					myServer.EnviaLocation ("/opciones");
 					continue;

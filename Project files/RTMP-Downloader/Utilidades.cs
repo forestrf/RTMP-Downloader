@@ -84,6 +84,7 @@ namespace RTMPDownloader
 	[Serializable]
 	public class Configs{
 		public string rutaDescargas;
+		public string proxy;
 	}
 
 	public class Bloqueo{

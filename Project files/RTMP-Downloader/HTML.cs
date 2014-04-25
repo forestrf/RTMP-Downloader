@@ -47,6 +47,12 @@ namespace RTMPDownloader
 				"<div class='contenidoTIT'>Dónde se guardarán la descargas:</div>" +
 				"<div class='contenidoCONT'>Ruta actual: "+MainClass.configs.rutaDescargas+"<br>" +
 				"<a href='/listadirs?ruta="+MainClass.configs.rutaDescargas+"'>Elejir dónde guardar los vídeos</a></div>" +
+				"<div class='contenidoTIT'>Configurar un proxy:</div>" +
+				"<form method='GET' action='/elijeproxy'>"+
+				"<div class='contenidoCONT'>Proxy: <input type='text' name='valor' placeholder='x.x.x.x:xxxx' value='"+MainClass.configs.proxy+"'>" +
+				"<input type='submit' value='Usar este proxy'><br>" +
+				"Para no usar proxy guarda el campo Proxy vacio." +
+				"</form>"+
 				"</div>";
 		}
 

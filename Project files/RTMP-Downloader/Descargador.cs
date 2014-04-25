@@ -60,8 +60,16 @@ namespace RTMPDownloader
 
 				string parametroO = Utilidades.GetParametro(url, "o");
 				if(parametroO.IndexOf(":\\") == -1){
-
 					url = Utilidades.ReemplazaParametro (url, "o", MainClass.configs.rutaDescargas + parametroO);
+				}
+
+				if(MainClass.configs.proxy != null && MainClass.configs.proxy != ""){
+					if(Utilidades.GetParametro(url, "S")!=""){
+						url = Utilidades.ReemplazaParametro (url, "S", MainClass.configs.proxy);
+					}
+					else{
+						url += " -S \""+MainClass.configs.proxy+"\"";
+					}
 				}
 	
 				Debug.WriteLine(Utilidades.WL("Iniciando proceso RTMPDump para = "+url));
