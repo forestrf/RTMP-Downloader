@@ -11,8 +11,6 @@ namespace RTMPDownloader
 	public class NetworkServer
 	{
 		TcpListener listener;
-		TcpClient client;
-		Stream stream;
 	
 		public NetworkServer (){}
 	
@@ -41,7 +39,8 @@ namespace RTMPDownloader
 				next_char = inputStream.ReadByte();
 				if (next_char == '\n') { break; }
 				if (next_char == '\r') { continue; }
-				if (next_char == -1) { System.Threading.Thread.Sleep(1); continue; };
+				//if (next_char == -1) { System.Threading.Thread.Sleep(1); continue; }
+				if (next_char == -1) { break; }
 				data += Convert.ToChar(next_char);
 			}            
 			return data;
@@ -60,18 +59,22 @@ namespace RTMPDownloader
 			byte[] bytes = System.Text.Encoding.UTF8.GetBytes (text);
 			inputStream.Write (bytes, 0, bytes.Length);
 		}
-
-		public RespuestaHTTP Escucha ()
+		/*
+		public bool puedeEscuchar (){
+			return listener.Pending;
+		}
+		*/
+		public RespuestaServer Escucha ()
 		{
 	
 			try{
-				if(client != null)
-					return new RespuestaHTTP(false);
+				/*if(client != null)
+					return new RespuestaServer(new RespuestaHTTP(false), null, null);*/
 
-				client = listener.AcceptTcpClient ();
+				TcpClient client = listener.AcceptTcpClient ();
 				//Console.WriteLine ("Conexion establecida");
 	
-				stream = new BufferedStream(client.GetStream ());
+				Stream stream = new BufferedStream(client.GetStream ());
 				//stream = client.GetStream ();
 	
 	
@@ -105,11 +108,11 @@ namespace RTMPDownloader
 												Uri.UnescapeDataString(variables[i].Value).Replace("+", " "),
 												Uri.UnescapeDataString(valores[i].Value).Replace("+", " "));
 						}
-						return new RespuestaHTTP (url, parametros);
+						return new RespuestaServer(new RespuestaHTTP(url, parametros), client, stream);
 					}
-					return new RespuestaHTTP (url);
+					return new RespuestaServer(new RespuestaHTTP(url), client, stream);
 				}
-				return new RespuestaHTTP (false);
+				return new RespuestaServer(new RespuestaHTTP(false), client, stream);
 	
 			}
 			catch(Exception e){
@@ -117,22 +120,22 @@ namespace RTMPDownloader
 				Console.WriteLine (e);
 				Debug.WriteLine(Utilidades.WL("h1"));
 				Debug.WriteLine(Utilidades.WL(e.ToString()));
-				CierraCliente ();
-				return new RespuestaHTTP (false);
+				//CierraCliente ();
+				return new RespuestaServer(new RespuestaHTTP(false), null, null);
 			}
 		}
 	
-		public bool Envia (String que)
+		public bool Envia (RespuestaServer respuestaServer, string que)
 		{
 			try {
-				streamWrite(stream, "HTTP/1.1 200 OK\r\n"+
+				streamWrite(respuestaServer.stream, "HTTP/1.1 200 OK\r\n"+
 					"Connection: Close\r\n"+
 					"Content-Type: text/html; charset=utf-8\r\n"+
 					"Connection: Close\r\n"+
 					"\r\n"+que);
 
 	
-				CierraCliente ();
+				CierraCliente (respuestaServer);
 				return true;
 			} catch (Exception e) {
 				Console.WriteLine ("h2");
@@ -143,16 +146,16 @@ namespace RTMPDownloader
 			}
 		}
 		
-		public bool EnviaRaw(String contentType, byte[] contenido){
+		public bool EnviaRaw(RespuestaServer respuestaServer, String contentType, byte[] contenido){
 			try {
-				streamWrite(stream, "HTTP/1.1 200 OK\r\n"+
+				streamWrite(respuestaServer.stream, "HTTP/1.1 200 OK\r\n"+
 					"Connection: Close\r\n"+
 					"Content-Type: "+contentType+"\r\n"+
 					"Connection: Close\r\n"+
 					"\r\n");
-				stream.Write(contenido, 0, contenido.Length);
+				respuestaServer.stream.Write(contenido, 0, contenido.Length);
 	
-				CierraCliente ();
+				CierraCliente (respuestaServer);
 				return true;
 			} catch (Exception e) {
 				Console.WriteLine ("h10");
@@ -163,16 +166,16 @@ namespace RTMPDownloader
 			}
 		}
 	
-		public bool EnviaLocation (String que)
+		public bool EnviaLocation (RespuestaServer respuestaServer, String que)
 		{
 			try {
-				streamWrite(stream, "HTTP/1.1 301 OK\r\n");
-				streamWrite(stream, "Location: " + que+"\r\n");
-				streamWrite(stream, "Content-Length: 0\r\n");
-				streamWrite(stream, "Connection: Close\r\n");
-				streamWrite(stream, "\r\n");
+				streamWrite(respuestaServer.stream, "HTTP/1.1 301 OK\r\n");
+				streamWrite(respuestaServer.stream, "Location: " + que+"\r\n");
+				streamWrite(respuestaServer.stream, "Content-Length: 0\r\n");
+				streamWrite(respuestaServer.stream, "Connection: Close\r\n");
+				streamWrite(respuestaServer.stream, "\r\n");
 	
-				CierraCliente ();
+				CierraCliente (respuestaServer);
 				return true;
 			} catch (Exception e) {
 				Console.WriteLine("h3");
@@ -183,16 +186,16 @@ namespace RTMPDownloader
 			}
 		}
 	
-		public void CierraCliente ()
+		public void CierraCliente (RespuestaServer respuestaServer)
 		{
 			try{
-				stream.Dispose();
-				stream.Close ();
-				stream = null;
+				respuestaServer.stream.Dispose();
+				respuestaServer.stream.Close ();
+				respuestaServer.stream = null;
 				//Console.WriteLine("Cliente cerrado.");
 
-				client.Close();
-				client = null;
+				respuestaServer.client.Close();
+				respuestaServer.client = null;
 			}
 			catch(Exception e){
 				Console.WriteLine("h4");
@@ -205,7 +208,7 @@ namespace RTMPDownloader
 		public void Cierra ()
 		{
 			try{
-				CierraCliente();
+				//CierraCliente();
 				this.listener.Stop ();
 				Console.WriteLine("Servidor cerrado.");
 			}
@@ -309,6 +312,40 @@ namespace RTMPDownloader
 		{
 			this._variable = variable;
 			this._valor = valor;
+		}
+	}
+
+	public class RespuestaServer{
+		RespuestaHTTP _respuestaHTTP;
+		TcpClient _client;
+		Stream _stream;
+
+		public RespuestaHTTP respuestaHTTP{
+			get{
+				return _respuestaHTTP;
+			}
+			set{ }
+		}
+
+		public TcpClient client{
+			get{
+				return _client;
+			}
+			set{ }
+		}
+
+		public Stream stream{
+			get{
+				return _stream;
+			}
+			set{ }
+		}
+
+		public RespuestaServer (RespuestaHTTP respuestaHTTP, TcpClient client, Stream stream)
+		{
+			this._respuestaHTTP = respuestaHTTP;
+			this._client = client;
+			this._stream = stream;
 		}
 	}
 }

@@ -106,180 +106,193 @@ namespace RTMPDownloader
 			Process.Start("http://127.0.0.1:"+puerto+"/");
 			
 			while(true) {
-				RespuestaHTTP GETurl = myServer.Escucha();
+				RespuestaServer respuestaServer = myServer.Escucha();
+				RespuestaHTTP GETurl = respuestaServer.respuestaHTTP;
 	
 				if (!GETurl.correcto) {
-					myServer.CierraCliente ();
-					continue;
-				}
-	
-				string path = GETurl.path;
-	
-				string accion = GETurl.getParametro ("accion");
-	
-				string nombre = GETurl.getParametro ("nombre");
-				string url = GETurl.getParametro ("url");
-				
-				string urlhttp = GETurl.getParametro ("urlhttp");
-
-				if (accion != "progreso") {
-					Debug.WriteLine(Utilidades.WL(""));
-					Debug.WriteLine (Utilidades.WL ("------------------------------------------------------------"));
-					Debug.WriteLine (Utilidades.WL ("Nueva petición realizada al servidor:"));
-					Debug.WriteLine (Utilidades.WL ("path = " + path));
-					Debug.WriteLine (Utilidades.WL ("accion = " + accion));
-					Debug.WriteLine (Utilidades.WL ("nombre = " + nombre));
-					Debug.WriteLine (Utilidades.WL ("url = " + url));
-					Debug.WriteLine (Utilidades.WL ("urlhttp = " + urlhttp));
-					Debug.WriteLine (Utilidades.WL ("------------------------------------------------------------"));
-					Debug.WriteLine(Utilidades.WL(""));
-				}
-
-				if (accion == "" || accion == "descargar") {
-					if (url != "") {
-						Debug.WriteLine(Utilidades.WL("url"));
-						string cerrarVentana = GETurl.getParametro ("cerrarVentana");
-						if(cerrarVentana == "" || cerrarVentana == "1"){
-							myServer.Envia(HTML.cierraConJS());
-						}
-						//else if(cerrarVentana == "0" || true){
-						else{
-							myServer.EnviaLocation ("/");
-						}
-						Debug.WriteLine(Utilidades.WL("Poniendo descarga en cola..."));
-						var t = new Thread(() => lanzaDescarga(url, nombre));
-						t.Start();
-						Debug.WriteLine(Utilidades.WL("Descarga puesta en cola"));
-						continue;
-					}
-					else if (urlhttp != "") {
-						Debug.WriteLine(Utilidades.WL("urlhttp"));
-						string cerrarVentana = GETurl.getParametro ("cerrarVentana");
-						if(cerrarVentana == "" || cerrarVentana == "1"){
-							myServer.Envia(HTML.cierraConJS());
-						}
-						//else if(cerrarVentana == "0" || true){
-						else{
-							myServer.EnviaLocation ("/");
-						}
-						//Descargar urlhttp para usar el contenido como url
-						try{
-							/*if(configs.proxy != null && configs.proxy != ""){}
-							else*/
-							url = new WebClient().DownloadString(urlhttp);
-
-
-							Debug.WriteLine(Utilidades.WL("url descargada desde urlhttp = "+url));
-							Debug.WriteLine(Utilidades.WL("Poniendo la descarga en cola"));
-							var t = new Thread(() => lanzaDescarga(url, nombre));
-							t.Start();
-							Debug.WriteLine(Utilidades.WL("Descarga puesta en cola"));
-						}
-						catch(Exception e){
-							Console.WriteLine (e);
-							Debug.WriteLine(Utilidades.WL(e.ToString()));
-						}
-						continue;
-					}
-				}
-	
-				if(path == "/ayuda"){
-					myServer.Envia (HTML.getAyuda());
+					myServer.CierraCliente (respuestaServer);
 					continue;
 				}
 
-				if(path == "/opciones"){
-					myServer.Envia (HTML.getOpciones());
-					continue;
-				}
-				
-				if(path == "/ayuda/ayuda_prev.png"){
-					byte[] imgBytes = GetILocalFileBytes.Get("RTMPDownloader.ayuda_img.png");
-					myServer.EnviaRaw ("image/png", imgBytes);
-					continue;
-				}
-				
-				if(path == "/all.css"){
-					byte[] cssBytes = GetILocalFileBytes.Get("RTMPDownloader.web.css.all.css");
-					myServer.EnviaRaw ("text/css; charset=utf-8", cssBytes);
-					continue;
-				}
-	
-				if(path == "/rtmpdownloader.js"){
-					myServer.Envia (HTML.getRTMPdownloaderjs());
-					continue;
-				}
+				Thread t = new Thread(delegate()
+					{
+						operaDesdeServidorAcciones(respuestaServer);
+					});
+				t.Start();
 
-				if (path == "/listadirs/folder.png") {
-					byte[] imgBytes = GetILocalFileBytes.Get("RTMPDownloader.web.icons.folder.png");
-					myServer.EnviaRaw ("image/png", imgBytes);
-					continue;
-				}
-
-				if (path == "/listadirs") {
-					string rutaInicial = GETurl.getParametro("ruta");
-					myServer.Envia (HTML.getFileBrowser (rutaInicial));
-					continue;
-				}
-
-				if (path == "/elijedir") {
-					string rutaInicial = GETurl.getParametro("ruta");
-					configs.rutaDescargas = rutaInicial;
-					Utilidades.escribirConfigs (configs);
-					myServer.EnviaLocation ("/opciones");
-					continue;
-				}
-
-				if (path == "/elijeproxy") {
-					string proxy = GETurl.getParametro("valor");
-					configs.proxy = proxy;
-					Utilidades.escribirConfigs (configs);
-					myServer.EnviaLocation ("/opciones");
-					continue;
-				}
-			
-				if (path == "/" && accion == "") {
-					myServer.Envia (HTML.getIndex());
-					continue;
-				}
-	
-				if (accion == "progreso") {
-					//Mostrar un alert en caso de que se agregue una nueva descarga para conseguir el focus de la pestaña
-					if(descargasEnProceso.Count > TempDescargasEnProcesoCantidad){
-						myServer.Envia (HTML.getProgreso("Descarga agregada"));
-						TempDescargasEnProcesoCantidad = descargasEnProceso.Count;
-					}
-					else{
-						myServer.Envia (HTML.getProgreso());
-					}
-					continue;
-				}
-				
-				if (accion == "cancelarDescarga") {
-					int elem = Convert.ToInt32(GETurl.getParametro ("elem"));
-					if(elem >= 0 && elem < descargasEnProceso.Count){
-						borraDescarga(descargasEnProceso[elem]);
-					}
-					myServer.EnviaLocation("/");
-					continue;
-				}
-				
-				if (accion == "cerrarPrograma") {
-					for(int i=0; i< descargasEnProceso.Count; i++){
-						descargasEnProceso[i].Cancelar();
-					}
-					myServer.Envia(HTML.getCerrado());
-					
-					myServer.Cierra();
-					
-					return;
-				}
-	
-	
-				myServer.Envia ("No se encuentra la orden.");
+				Debug.WriteLine (Process.GetCurrentProcess ().Threads.Count);
 			}
 		}
 	
+		public static void operaDesdeServidorAcciones(RespuestaServer respuestaServer){
+			RespuestaHTTP GETurl = respuestaServer.respuestaHTTP;
+
+			string path = GETurl.path;
+
+			string accion = GETurl.getParametro ("accion");
+
+			string nombre = GETurl.getParametro ("nombre");
+			string url = GETurl.getParametro ("url");
+
+			string urlhttp = GETurl.getParametro ("urlhttp");
+
+			if (accion != "progreso") {
+				Debug.WriteLine(Utilidades.WL(""));
+				Debug.WriteLine (Utilidades.WL ("------------------------------------------------------------"));
+				Debug.WriteLine (Utilidades.WL ("Nueva petición realizada al servidor:"));
+				Debug.WriteLine (Utilidades.WL ("path = " + path));
+				Debug.WriteLine (Utilidades.WL ("accion = " + accion));
+				Debug.WriteLine (Utilidades.WL ("nombre = " + nombre));
+				Debug.WriteLine (Utilidades.WL ("url = " + url));
+				Debug.WriteLine (Utilidades.WL ("urlhttp = " + urlhttp));
+				Debug.WriteLine (Utilidades.WL ("------------------------------------------------------------"));
+				Debug.WriteLine(Utilidades.WL(""));
+			}
+
+			if (accion == "" || accion == "descargar") {
+				if (url != "") {
+					Debug.WriteLine(Utilidades.WL("url"));
+					string cerrarVentana = GETurl.getParametro ("cerrarVentana");
+					if(cerrarVentana == "" || cerrarVentana == "1"){
+						myServer.Envia(respuestaServer, HTML.cierraConJS());
+					}
+					//else if(cerrarVentana == "0" || true){
+					else{
+						myServer.EnviaLocation (respuestaServer, "/");
+					}
+					Debug.WriteLine(Utilidades.WL("Poniendo descarga en cola..."));
+					var t = new Thread(() => lanzaDescarga(url, nombre));
+					t.Start();
+					Debug.WriteLine(Utilidades.WL("Descarga puesta en cola"));
+					return;
+				}
+				else if (urlhttp != "") {
+					Debug.WriteLine(Utilidades.WL("urlhttp"));
+					string cerrarVentana = GETurl.getParametro ("cerrarVentana");
+					if(cerrarVentana == "" || cerrarVentana == "1"){
+						myServer.Envia(respuestaServer, HTML.cierraConJS());
+					}
+					//else if(cerrarVentana == "0" || true){
+					else{
+						myServer.EnviaLocation (respuestaServer, "/");
+					}
+					//Descargar urlhttp para usar el contenido como url
+					try{
+						/*if(configs.proxy != null && configs.proxy != ""){}
+							else*/
+						url = new WebClient().DownloadString(urlhttp);
+
+
+						Debug.WriteLine(Utilidades.WL("url descargada desde urlhttp = "+url));
+						Debug.WriteLine(Utilidades.WL("Poniendo la descarga en cola"));
+						var t = new Thread(() => lanzaDescarga(url, nombre));
+						t.Start();
+						Debug.WriteLine(Utilidades.WL("Descarga puesta en cola"));
+					}
+					catch(Exception e){
+						Console.WriteLine (e);
+						Debug.WriteLine(Utilidades.WL(e.ToString()));
+					}
+					return;
+				}
+			}
+
+			if(path == "/ayuda"){
+				myServer.Envia (respuestaServer, HTML.getAyuda());
+				return;
+			}
+
+			if(path == "/opciones"){
+				myServer.Envia (respuestaServer, HTML.getOpciones());
+				return;
+			}
+
+			if(path == "/ayuda/ayuda_prev.png"){
+				byte[] imgBytes = GetILocalFileBytes.Get("RTMPDownloader.ayuda_img.png");
+				myServer.EnviaRaw (respuestaServer, "image/png", imgBytes);
+				return;
+			}
+
+			if(path == "/all.css"){
+				byte[] cssBytes = GetILocalFileBytes.Get("RTMPDownloader.web.css.all.css");
+				myServer.EnviaRaw (respuestaServer, "text/css; charset=utf-8", cssBytes);
+				return;
+			}
+
+			if(path == "/rtmpdownloader.js"){
+				myServer.Envia (respuestaServer, HTML.getRTMPdownloaderjs());
+				return;
+			}
+
+			if (path == "/listadirs/folder.png") {
+				byte[] imgBytes = GetILocalFileBytes.Get("RTMPDownloader.web.icons.folder.png");
+				myServer.EnviaRaw (respuestaServer, "image/png", imgBytes);
+				return;
+			}
+
+			if (path == "/listadirs") {
+				string rutaInicial = GETurl.getParametro("ruta");
+				myServer.Envia (respuestaServer, HTML.getFileBrowser (rutaInicial));
+				return;
+			}
+
+			if (path == "/elijedir") {
+				string rutaInicial = GETurl.getParametro("ruta");
+				configs.rutaDescargas = rutaInicial;
+				Utilidades.escribirConfigs (configs);
+				myServer.EnviaLocation (respuestaServer, "/opciones");
+				return;
+			}
+
+			if (path == "/elijeproxy") {
+				string proxy = GETurl.getParametro("valor");
+				configs.proxy = proxy;
+				Utilidades.escribirConfigs (configs);
+				myServer.EnviaLocation (respuestaServer, "/opciones");
+				return;
+			}
+
+			if (path == "/" && accion == "") {
+				myServer.Envia (respuestaServer, HTML.getIndex());
+				return;
+			}
+
+			if (accion == "progreso") {
+				//Mostrar un alert en caso de que se agregue una nueva descarga para conseguir el focus de la pestaña
+				if(descargasEnProceso.Count > TempDescargasEnProcesoCantidad){
+					myServer.Envia (respuestaServer, HTML.getProgreso("Descarga agregada"));
+					TempDescargasEnProcesoCantidad = descargasEnProceso.Count;
+				}
+				else{
+					myServer.Envia (respuestaServer, HTML.getProgreso());
+				}
+				return;
+			}
+
+			if (accion == "cancelarDescarga") {
+				int elem = Convert.ToInt32(GETurl.getParametro ("elem"));
+				if(elem >= 0 && elem < descargasEnProceso.Count){
+					borraDescarga(descargasEnProceso[elem]);
+				}
+				myServer.EnviaLocation(respuestaServer, "/");
+				return;
+			}
+
+			if (accion == "cerrarPrograma") {
+				for(int i=0; i< descargasEnProceso.Count; i++){
+					descargasEnProceso[i].Cancelar();
+				}
+				myServer.Envia(respuestaServer, HTML.getCerrado());
+
+				myServer.Cierra();
+
+				return;
+			}
+
+
+			myServer.Envia (respuestaServer, "No se encuentra la orden.");
+		}
+
 		public static void borraDescarga(Descargador cual){
 			cual.Cancelar();
 			descargasEnProceso.Remove(cual);
