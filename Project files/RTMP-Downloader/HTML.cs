@@ -135,7 +135,7 @@ namespace RTMPDownloader
 		public static string cierraConJS(){
 			return "<html><body>"+
 				"La descarga ha sido agregada.<br>"+
-				"Ahora puedes cerrar esta ventana."+
+				"<a href='/'>Clica aquí para ver el progreso de las descargas.</a> o cierra esta pestaña."+
 				"</body></html>";
 		}
 	
@@ -194,7 +194,7 @@ namespace RTMPDownloader
 				{
 					if (d.IsReady == true)
 					{
-						respuesta += "<a href='/listadirs?ruta="+d.Name+"\\'>"+d.VolumeLabel+"</a> ";
+						respuesta += "<a href='/listadirs?ruta="+d.Name+"\\'>"+d.VolumeLabel+"</a> | ";
 					}
 				}
 

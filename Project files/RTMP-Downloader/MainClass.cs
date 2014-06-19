@@ -24,6 +24,7 @@ namespace RTMPDownloader
 		public static int TempDescargasEnProcesoCantidad = 0;
 	
 
+		public static bool forzarSalida = false;
 
 		public static Configs configs = new Configs();
 
@@ -65,7 +66,7 @@ namespace RTMPDownloader
 
 			configs = Utilidades.leerConfigs ();
 			if (configs.rutaDescargas == null || configs.rutaDescargas == "") {
-				configs.rutaDescargas = relativePath;
+				configs.rutaDescargas = relativePath.Replace(":\\",":\\\\");
 				Utilidades.escribirConfigs (configs);
 			}
 			Debug.WriteLine(Utilidades.WL("Ruta descargas: "+configs.rutaDescargas));
@@ -106,6 +107,10 @@ namespace RTMPDownloader
 			Process.Start("http://127.0.0.1:"+puerto+"/");
 			
 			while(true) {
+				if (forzarSalida) {
+					return;
+				}
+
 				RespuestaServer respuestaServer = myServer.Escucha();
 				RespuestaHTTP GETurl = respuestaServer.respuestaHTTP;
 	
@@ -285,6 +290,8 @@ namespace RTMPDownloader
 				myServer.Envia(respuestaServer, HTML.getCerrado());
 
 				myServer.Cierra();
+
+				forzarSalida = true;
 
 				return;
 			}
