@@ -16,7 +16,7 @@ namespace RTMPDownloader
 		public static string rtmpdumpFile = "";
 		public static string relativePath = "";
 	
-		public static string version = "0.3.2";
+		public static string version = "0.3.3";
 		
 		public static int puerto = 25432;
 	

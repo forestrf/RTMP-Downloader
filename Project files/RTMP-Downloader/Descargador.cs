@@ -55,8 +55,13 @@ namespace RTMPDownloader
 			try {
 				Console.WriteLine ("Descargando. Espere por favor...");
 	
-				if(nombre != "")
-					url = Utilidades.ReemplazaParametro (url, "o", nombre);
+				if(nombre != ""){
+					if(Utilidades.GetParametro(url, "o") == ""){
+						url += " -o \""+nombre+"\" ";
+					} else {
+						url = Utilidades.ReemplazaParametro (url, "o", nombre);
+					}
+				}
 
 				string parametroO = Utilidades.GetParametro(url, "o");
 				if(parametroO.IndexOf(":\\") == -1){
