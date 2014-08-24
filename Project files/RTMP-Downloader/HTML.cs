@@ -106,11 +106,11 @@ namespace RTMPDownloader
 								"<div class=\"q\">Quitar</div>" +
 							"</div>";
 			for (int i=0; i<MainClass.descargasEnProceso.Count; i++) {
-				if (MainClass.descargasEnProceso [i].fallado != "") {
+				if (MainClass.descargasEnProceso [i].estado != "") {
 					resp += "<div class=\"elemento\">" +
 						"<div class=\"n\">" + MainClass.descargasEnProceso [i].nombre + "</div>" +
 						"<div class=\"u\">" + MainClass.descargasEnProceso [i].url + "</div>" +
-						"<div class=\"p\">"+MainClass.descargasEnProceso [i].fallado+"</div>" +
+						"<div class=\"p\">"+MainClass.descargasEnProceso [i].estado+"</div>" +
 						"<div class=\"t\"></div>" +
 						"<div class=\"q\"><a href=\"/?accion=cancelarDescarga&elem=" + i + "\">Quitar</a></div>" +
 						"</div>";

@@ -16,7 +16,7 @@ namespace RTMPDownloader
 		public static string rtmpdumpFile = "";
 		public static string relativePath = "";
 	
-		public static string version = "0.3.3";
+		public static string version = "0.3.4";
 		
 		public static int puerto = 25432;
 	
@@ -322,16 +322,7 @@ namespace RTMPDownloader
 				nombre = "video" + j + ".mp4";
 			}
 	
-			if (miDescargador.Comienza (url, nombre)) {
-				//Abrir carpeta que tiene el video
-				//string myDocspath = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
-				string windir = Environment.GetEnvironmentVariable ("WINDIR");
-				System.Diagnostics.Process prc = new System.Diagnostics.Process ();
-				prc.StartInfo.FileName = windir + @"\explorer.exe";
-				prc.StartInfo.Arguments = configs.rutaDescargas;
-				prc.Start ();
-			}
-			
+			miDescargador.Comienza (url, nombre);
 		}
 	}
 }

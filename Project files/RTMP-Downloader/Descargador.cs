@@ -19,7 +19,7 @@ namespace RTMPDownloader
 		public string horaRestanteString = "";
 		
 		Boolean cancelado = false;
-		public String fallado = "";
+		public String estado = "";
 		
 		ProcessStartInfo procesoRTMPDUMP;
 		Process exeProcessProcesoRTMPDUMP;
@@ -106,7 +106,7 @@ namespace RTMPDownloader
 				Console.WriteLine ("RTMPDump ha fallado.");
 				Debug.WriteLine(Utilidades.WL("RTMPDump ha fallado"));
 				Debug.WriteLine(Utilidades.WL(e.ToString()));
-				fallado = "RTMPDump ha fallado";
+				estado = "RTMPDump ha fallado";
 				return false;
 			}
 	
@@ -116,14 +116,15 @@ namespace RTMPDownloader
 			//	return true;
 	
 			if (porcentajeInt == 0)
-				fallado = "Fallo";
+				estado = "Fallo";
 			else {
 				porcentaje = 100;
 				porcentajeInt = 100;
+				estado = "Terminado";
 			}
 	
 			
-			return !cancelado;
+			return !cancelado && estado == "Terminado";
 		}
 	
 		public void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
