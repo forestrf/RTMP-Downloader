@@ -121,6 +121,7 @@ namespace RTMPDownloader
 				porcentaje = 100;
 				porcentajeInt = 100;
 				estado = "Terminado";
+				horaRestanteString = "Completado";
 			}
 	
 			
